@@ -28,6 +28,7 @@
 			<?php foreach($keys as $key): ?>
              <th><?php echo $key; ?></th>
 			<?php endforeach; ?>
+			<th>Expired Domain</th>
           </tr>
        </thead>
        <tbody>
@@ -38,6 +39,7 @@
 				foreach($keys as $key){
 					echo "<td>{$domain->$key}</td>";
 				}
+				echo "<td>". ($domain->expired==1?"expired":"-") . "</td>";
 				echo "</tr>";
 			}
 		?>
@@ -51,7 +53,10 @@
 		&nbsp;
 	</div>
 	<div class="form-group-item">
-		<a href="<?php echo site_url('domains/read_domains');?>" class="btn btn-success btn-lg btn-block" style="color:#fff;">Scan</a>
+		<a href="<?php echo site_url('domains/read_domains');?>" class="btn btn-success btn-lg btn-block" style="color:#fff;">Scan CSV</a>
+	</div>
+	<div class="form-group-item">
+		<a href="<?php echo site_url('domains/add_domains');?>" class="btn btn-success btn-lg btn-block" style="color:#fff;">Add Domains</a>
 	</div>
 	<div class="form-group-item">
 		<a href="<?php echo site_url('Logout');?>" class="btn btn-success btn-lg btn-block" style="color:#fff;">Logout</a>

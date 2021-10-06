@@ -39,6 +39,9 @@
 	<div class="form-group-item" style="width: 70%;">
 		&nbsp;
 	</div>
+    <div class="form-group-item">
+		<a href="<?php echo site_url('domains/add_domains');?>" class="btn btn-success btn-lg btn-block" style="color:#fff;">Add Domains</a>
+	</div>
 	<div class="form-group-item">
 		<a href="<?php echo site_url('domains');?>" class="btn btn-success btn-lg btn-block" style="color:#fff;">Return to List</a>
 	</div>
