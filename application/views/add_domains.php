@@ -116,13 +116,26 @@ tr{
     <h2>Add Domains</h2>
     
     <?php echo form_open_multipart('domains/do_upload');?>
-
-        <div class="form-group">
-            <label for="email">Domains in CSV:</label>
-            <input type="file" class="form-control" id="domains_csv" name="domains_csv" accept=".csv">
+        <div class="form-group row">
+            <div class="col-md-8">
+                <label for="email">Domains in CSV:</label>
+                <input type="file" class="form-control" id="domains_csv" name="domains_csv" accept=".csv">
+            </div>
+            <div class="col-md-4 mt-auto">
+                <input class="form-control btn-primary" type="submit" value="Upload CSV">
+            </div>
         </div>
-        <input type="submit" value="Add domains">
-
+    </form>
+    <?php echo form_open_multipart('domains/do_upload_text');?>
+        <div class="form-group row">
+            <div class="col-md-8">
+                <label for="email">Domains:</label>
+                <textarea class="form-control" name="domains" rows="8"></textarea>
+            </div>
+            <div class="col-md-4 mt-auto">
+                <button class="form-control btn-primary" type="submit">Add Domains</button>
+            </div>
+        </div>
     </form>
     <?php if(isset($message)): ?>
         <div class="alert alert-success">

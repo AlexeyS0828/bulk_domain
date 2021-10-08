@@ -15,16 +15,16 @@
                 <tr>
                     <th>All Domains</th>
                     <th>Success</th>
-                    <th>Fail</th>
-                    <th>Failed Domains</th>
+                    <th>Expired</th>
+                    <th>Expired Domains</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td><?php echo $data['count']; ?></td>
-                    <td><?php echo $data['success']; ?></td>
-                    <td><?php echo $data['fail']; ?></td>
-                    <td><?php 
+                    <td id="result_count"><?php echo $data['count']; ?></td>
+                    <td id="result_success"><?php echo $data['success']; ?></td>
+                    <td id="result_fail"><?php echo $data['fail']; ?></td>
+                    <td id="result_fails"><?php 
                         $i = 0;
                         foreach($data['fails'] as $domain){
                             echo "<b>".(++$i).":</b> &nbsp;&nbsp;&nbsp;" . $domain . "<br>";
@@ -33,6 +33,15 @@
                 </tr>
             </tbody>
         </table>
+        <div class="alert alert-success result-status">
+            <?php 
+                if(isset($data['message'])){
+                    echo $data['message'];
+                }else{
+                    echo 'scanning'; 
+                }
+            ?>
+        </div>
   </div>
 </div>
 <div class="form-group" style="display: flex;">
@@ -49,6 +58,37 @@
 		<a href="<?php echo site_url('Logout');?>" class="btn btn-success btn-lg btn-block" style="color:#fff;">Logout</a>
 	</div>
 </div>
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.js" type="text/javascript"></script>
+
+<script>
+    function run_scheduler(scheduler_id){
+        $.ajax({
+            type: "POST",
+            url: "<?php echo site_url("/domains/run_scheduler"); ?>", 
+            data: {id: scheduler_id},
+            dataType: "text",  
+            cache:false,
+            success: 
+                function(data){
+                    result = JSON.parse(data);
+                    $("#result_success").html(parseInt($("#result_success").html()) + result.result.success);
+                    $("#result_fail").html(parseInt($("#result_fail").html()) + result.result.fail);
+                    $("#result_fails").html(result.result.fails);
+                    if(result.result.count>0){
+                        $(".result-status").text("running  " + scheduler_id + " domains " + result.result.count);
+                        run_scheduler(scheduler_id);
+                    }else{
+                        $(".result-status").text("completed scaning");
+                    }
+                }
+        });
+    }
+    $(document).ready(function(){
+        var scheduler_id = <?php echo($data['scheduler_id']); ?>;
+        if (!isNaN(scheduler_id))
+            run_scheduler(scheduler_id);        
+    });
+
+</script>
 </body>
 </html>

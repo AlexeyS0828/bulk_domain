@@ -7,21 +7,41 @@ class Domains extends CI_Controller {
         if(!$this->session->userdata('uid'))
             redirect('signin');
         $this->load->helper(array('form', 'url', 'domain_info'));
+        $this->load->model('Domains_Model');
+        $this->load->model('Scheduler_Model');
     }
     public function index(){
-        $this->load->model('Domains_Model');
         $domains = $this->Domains_Model->index();
         $this->load->view('domains',['domains'=>$domains]);
     }
 
     public function read_domains(){
-        global $domains;
-        $this->load->model('Domains_Model');
+        // global $domains;
         if(file_exists($this->filename)){
             $domains = $this->Domains_Model->read_domains_csv($this->filename);
         }else{
             $domains = array();
         }
+
+        $scheduler_id = $this->Scheduler_Model->add_new_scheduler($domains);
+        if(!$scheduler_id){
+            $error = array('error' => "There is no domains to add.");
+            $this->load->view('add_domains', $error);
+            return;
+        }
+
+        $data = array(
+            'count' => sizeof($domains),
+            'success' => 0,
+            'fail' => 0,
+            'fails' => [],
+            'scheduler_id' => $scheduler_id
+         );
+        // $data = $this->scan_domains($domains);
+        $this->load->view('read_domains',['data'=>$data]);
+    }
+
+    private function scan_domains($domains){
         $success = 0;
         $fail = 0;
         $failed_domains = [];
@@ -37,12 +57,13 @@ class Domains extends CI_Controller {
             } else {
                 $fail++;
                 $failed_domains[] = $domain;
-                $data['Domain_name'] = $domain;
+                $data['Domain_Name'] = $domain;
                 $data['expired'] = 1;
             }
+
             $this->Domains_Model->add_domain($data);
-            
         }
+
         if(file_exists($this->filename)){
             unlink($this->filename);
         }
@@ -54,9 +75,8 @@ class Domains extends CI_Controller {
            'fails' => $failed_domains
         );
 
-        $this->load->view('read_domains',['data'=>$data]);
+        return $data;
     }
-
     
 
     public function add_domains(){
@@ -85,5 +105,61 @@ class Domains extends CI_Controller {
                 rename($data['upload_data']['full_path'], $this->filename);
                 $this->read_domains();
         }
+    }
+
+    public function do_upload_text(){
+        $post_data = $this->input->post();
+        $domains_str = $post_data['domains'];
+        $domains = explode("\n", trim($domains_str));
+        $new_domains = $this->Domains_Model->fetch_valid_new($domains);
+        $scheduler_id = $this->Scheduler_Model->add_new_scheduler($new_domains);
+        if(!$scheduler_id){
+            $error = array('error' => "There is no domains to add.");
+            $this->load->view('add_domains', $error);
+            return;
+        }
+        // $data = $this->scan_domains($new_domains);
+        $data = array(
+            'count' => sizeof($new_domains),
+            'success' => 0,
+            'fail' => 0,
+            'fails' => [],
+            'scheduler_id' => $scheduler_id
+         );
+        $this->load->view('read_domains',['data'=>$data]);
+    }
+
+    public function run_scheduler(){
+        $limit = 50;
+        $post_data = $this->input->post();
+        $scheduler_id = $post_data['id'];
+        $domains = $this->Scheduler_Model->fetch_domains($scheduler_id, $limit);
+        $data = $this->scan_domains($domains);
+        $this->Scheduler_Model->remove_domains($domains);
+        $data['scheduler_id'] = $scheduler_id;
+        echo json_encode(array("result" => $data));
+    }
+
+    public function run_existing_scheduler(){
+        $schedulers = $this->Scheduler_Model->fetch_existing_scheduler();
+        if(sizeof($schedulers) > 0){
+            $scheduler_id = $schedulers[0]->scheduler_id;
+            $count = $schedulers[0]->count;
+            $data = array(
+                'count' => $count,
+                'success' => 0,
+                'fail' => 0,
+                'fails' => [],
+                'scheduler_id' => $scheduler_id,
+                'message' => sizeof($schedulers) . "schedulers exists"
+             );
+            $this->load->view('read_domains',['data'=>$data]);
+        }
+    }
+
+    public function drop_domain(){
+        $id = $this->input->post('id');
+        $this->Domains_Model->drop_domain($id);
+        echo 'success';
     }
 }

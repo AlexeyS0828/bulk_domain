@@ -56,6 +56,18 @@ CREATE TABLE `tblusers` (
 insert  into `tblusers`(`id`,`FirstName`,`LastName`,`Email`,`Password`,`PostingDate`) values 
 (1,'admin','admin','admin@admin.com','Test@123','2021-06-30 02:14:15');
 
+
+
+DROP TABLE IF EXISTS `tblscheduler`;
+
+CREATE TABLE `tblscheduler` (
+  `Domain_Name` varchar(50) NOT NULL,
+  `scheduler_id` int(11) NOT NULL DEFAULT 1,
+  PRIMARY KEY (`Domain_Name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+
+
+
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;

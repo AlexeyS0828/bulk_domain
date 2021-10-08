@@ -17,6 +17,7 @@ class Bulkscan extends CI_Controller {
         fclose($f);
 
         $report = "";
+        $expired_report = "";
         foreach($domains as $domain){
             $domain_info = get_domain_info($domain->Domain_Name);
             $data = [];
@@ -31,6 +32,9 @@ class Bulkscan extends CI_Controller {
                 $data['expired'] = 0;
             } else {
                 $data['expired'] = 1;
+                if($domain->expired == 0){
+                    $expired_report .= $domain->Domain_Name . " \n ";
+                }
             }
             $data['ScanDate'] = date("Y-m-d H:i:s");
             $this->Domains_Model->update_domain($domain->id, $data);
@@ -40,12 +44,18 @@ class Bulkscan extends CI_Controller {
         $f = fopen($this->filepath."result.txt", "a");
         fwrite($f, "completed scan:" . date("Y-m-d H:i:s") . "\n\n");
         fclose($f);
+        if($expired_report != ""){
+            $expired_report = "This domains are dropped. \n\n" . $expired_report;
+        }
         if($report != ""){
+            $report = "This domains will dropped soon." . $report;
+        }
+        if($report != "" || $expired_report != ""){
             $this->email->from('scan@domainname.ie', 'Bulk Scanner');
             $this->email->to('support@domainname.ie');
 
             $this->email->subject('These domain will expire soon');
-            $this->email->message($report);
+            $this->email->message($report . "\n\n\n" . $expired_report);
 
             $this->email->send();
         }

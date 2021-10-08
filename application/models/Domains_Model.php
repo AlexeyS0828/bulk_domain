@@ -2,15 +2,23 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Domains_Model extends CI_Model{
-    private $_tbname = "tbldomains";
+    private $_tblname = "tbldomains";
 
     public function index(){
-        $query = $this->db->get($this->_tbname);
+        $query = $this->db
+                        ->order_by('expired, Drop_Date')
+                        ->get($this->_tblname);
         return $query->result();
     }
 
     public function add_domain($data){
-        $this->db->insert($this->_tbname, $data);
+        $query = $this->db->get_where($this->_tblname, array('Domain_Name' => $data["Domain_Name"]));
+        $result = $query->result();
+        if (sizeof($result)>0){
+            $this->update_domain($result[0]->id, $data);
+        } else {
+            $this->db->insert($this->_tblname, $data);
+        }
     }
 
     public function read_domains_csv($filename){
@@ -52,7 +60,7 @@ class Domains_Model extends CI_Model{
                 ->where("Drop_Date <=", $dropdate)
                 ->or_where("expired=TRUE")
                 ->where("ScanDate <=", $scandate);
-        $query = $this->db->get($this->_tbname);
+        $query = $this->db->get($this->_tblname);
 
         return $query->result();
        
@@ -61,11 +69,11 @@ class Domains_Model extends CI_Model{
     public function update_domain($id, $data){
         $this->db->set($data)
                 ->where('id', $id)
-                ->update($this->_tbname);
+                ->update($this->_tblname);
     }
 
     public function drop_date_format(){
-        $query = $this->db->get($this->_tbname);
+        $query = $this->db->get($this->_tblname);
         $rows = $query->result();
         foreach($rows as $row){
             if($row->Drop_Date != null){
@@ -77,5 +85,25 @@ class Domains_Model extends CI_Model{
         }
     }
 
+    public function fetch_valid_new($domains){
+        $new_domains = [];
+        foreach($domains as $domain){
+            $domain = trim($domain);
+            if($domain == "")
+                continue;
+            $query = $this->db->get_where("tbldomains", array("Domain_Name"=>$domain));
+            if (sizeof($query->result())>0){
+                continue;
+            }
+            $new_domains[] = $domain;
+        }
+
+        return $new_domains;
+    }
+
+    public function drop_domain($id){
+        $this->db->where('id', $id)
+                ->delete($this->_tblname);
+    }
 
 }
