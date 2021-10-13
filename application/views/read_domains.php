@@ -49,6 +49,9 @@
 		&nbsp;
 	</div>
     <div class="form-group-item">
+		<a href="<?php echo site_url('domains/run_existing_scheduler');?>" class="btn btn-success btn-lg btn-block" style="color:#fff;">Scan</a>
+	</div>
+    <div class="form-group-item">
 		<a href="<?php echo site_url('domains/add_domains');?>" class="btn btn-success btn-lg btn-block" style="color:#fff;">Add Domains</a>
 	</div>
 	<div class="form-group-item">

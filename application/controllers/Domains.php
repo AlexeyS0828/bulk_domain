@@ -45,10 +45,14 @@ class Domains extends CI_Controller {
         $success = 0;
         $fail = 0;
         $failed_domains = [];
+        $scan_error = false;
         foreach($domains as $domain){
             $domain_info = get_domain_info($domain);
             $data = [];
-            if($domain_info !== false){
+            if($domain_info == false){
+                $scan_error = true;
+                break;
+            } elseif($domain_info != "expired"){
                 foreach($domain_info as $key=>$value){
                     $new_key = str_replace(" ", "_", $key);
                     $data[$new_key] = $value;
@@ -72,7 +76,8 @@ class Domains extends CI_Controller {
            'count' => sizeof($domains),
            'success' => $success,
            'fail' => $fail,
-           'fails' => $failed_domains
+           'fails' => $failed_domains,
+           'scan_error' => $scan_error
         );
 
         return $data;
@@ -130,7 +135,7 @@ class Domains extends CI_Controller {
     }
 
     public function run_scheduler(){
-        $limit = 50;
+        $limit = 5;
         $post_data = $this->input->post();
         $scheduler_id = $post_data['id'];
         $domains = $this->Scheduler_Model->fetch_domains($scheduler_id, $limit);
@@ -154,12 +159,25 @@ class Domains extends CI_Controller {
                 'message' => sizeof($schedulers) . "schedulers exists"
              );
             $this->load->view('read_domains',['data'=>$data]);
+        } else {
+            $this->load->view('add_domains');
         }
+
     }
 
     public function drop_domain(){
         $id = $this->input->post('id');
         $this->Domains_Model->drop_domain($id);
         echo 'success';
+    }
+
+    public function convert_drop_date(){
+        $this->Domains_Model->convert_drop_date();
+    }
+
+    public function test(){
+        $domain = "swimming.ie";
+        $data = get_domain_info($domain);
+        var_dump($data);
     }
 }

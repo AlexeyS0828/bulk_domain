@@ -106,4 +106,22 @@ class Domains_Model extends CI_Model{
                 ->delete($this->_tblname);
     }
 
+    public function convert_drop_date(){
+        $domains = $this->db->where("expired", 0)
+                            ->get($this->_tblname)
+                            ->result();
+        $count = 0;
+        foreach($domains as $domain){
+            if($domain->expired == 1 || $domain->Registry_Expiry_Date == NULL){
+                continue;
+            }
+            $count++;
+            $date = DateTime::createFromFormat("d/m/Y", $domain->Registry_Expiry_Date);
+            $date->add(new DateInterval('P80D'));
+            $result_date = $date->format('Y-m-d');
+            $this->update_domain($domain->id, array("Drop_Date" => $result_date));
+        }
+        echo $count;
+    }
+
 }

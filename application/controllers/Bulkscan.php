@@ -21,7 +21,9 @@ class Bulkscan extends CI_Controller {
         foreach($domains as $domain){
             $domain_info = get_domain_info($domain->Domain_Name);
             $data = [];
-            if($domain_info !== false){
+            if($domain_info == false){
+                break;
+            } elseif($domain_info != "expired"){
                 foreach($domain_info as $key=>$value){
                     $new_key = str_replace(" ", "_", $key);
                     $data[$new_key] = $value;
@@ -60,6 +62,8 @@ class Bulkscan extends CI_Controller {
             $this->email->send();
         }
         
+
+        echo "completed";
     }
 
 }

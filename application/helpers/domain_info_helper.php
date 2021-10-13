@@ -21,7 +21,51 @@ function get_domain_info($domain){
     // $html_string = file_get_contents($url, false, $cxContext);
     //--------------------------
 
-    $html_string = file_get_contents($url);
+    // $ch = curl_init();
+    // curl_setopt($ch, CURLOPT_URL, $url);
+    // curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    // $output = curl_exec($ch);
+    // curl_close($ch);
+    // echo $output;exit;
+
+
+
+    $ch = curl_init();
+
+    $proxy = 'proxy.crawlera.com:8011';
+    $proxy_auth = 'https://183044f1cc4c4fe4a1c1ddd8d4db1263:';
+
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_PROXY, $proxy);
+    curl_setopt($ch, CURLOPT_PROXYUSERPWD, $proxy_auth);
+    curl_setopt($ch, CURLOPT_HEADER, 1);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 180);
+    curl_setopt($ch, CURLOPT_CAINFO, FCPATH . 'zyte-proxy-ca.crt'); // required for HTTPS
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 1); //required for HTTPS
+
+    $scraped_page = curl_exec($ch);
+
+    if($scraped_page === false)
+    {
+        echo 'cURL error: ' . curl_error($ch);
+    }
+    else
+    {
+        echo $scraped_page;
+    }
+
+    curl_close($ch);
+
+    $html_string = $scraped_page;
+
+    // try{
+    //     $html_string = file_get_contents($url);
+    // }catch(Exception $e){
+    //     $html_string = "";
+    // }
 
 
     $results = explode("<div class=\"page-content\">", $html_string);
@@ -78,9 +122,11 @@ function get_domain_info($domain){
             echo $domain . " --> ---" .$results[$ekey]. "----" . $e->getMessage() . "<br>";
         }
     }
-    
-    if(!array_key_exists($namekey, $results) || trim($results[$namekey]) == ""){
+
+    if(!array_key_exists($namekey, $results)){
         return false;
+    }elseif(trim($results[$namekey]) == ""){
+        return "expired";
     }
     return $results;
 }
