@@ -48,7 +48,7 @@ class Domains_Model extends CI_Model{
 
     public function get_scan_domains(){
         $date = new DateTime();
-        $date->sub(new DateInterval('P1D'));
+        $date->add(new DateInterval('P1D'));
         $dropdate = $date->format("Y-m-d");
 
         $date = new DateTime();
