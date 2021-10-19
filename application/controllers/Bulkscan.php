@@ -29,7 +29,8 @@ class Bulkscan extends CI_Controller {
                     $data[$new_key] = $value;
                 }
                 if($domain->Drop_Date == $data['Drop_Date']){
-                    $report .= $domain->Domain_Name . " \n ";
+                    if($domain->prescan == "0")
+                        $report .= $domain->Domain_Name . " \n ";
                 }
                 $data['expired'] = 0;
             } else {

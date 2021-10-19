@@ -76,7 +76,9 @@
                     result = JSON.parse(data);
                     $("#result_success").html(parseInt($("#result_success").html()) + result.result.success);
                     $("#result_fail").html(parseInt($("#result_fail").html()) + result.result.fail);
-                    $("#result_fails").html(result.result.fails);
+                    var expired_domains = $("#result_fails").html();
+                    expired_domains += (expired_domains != "" ? "<br>" : "") + result.result.fails.join("<br>")
+                    $("#result_fails").html(expired_domains);
                     if(result.result.count>0){
                         $(".result-status").text("running  " + scheduler_id + " domains " + result.result.count);
                         run_scheduler(scheduler_id);

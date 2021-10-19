@@ -55,15 +55,28 @@ class Domains_Model extends CI_Model{
         $date->sub(new DateInterval('P1M'));
         $scandate = $date->format("Y-m-d H:i:s");
         
-        $this->db->select('id, Domain_Name, Drop_Date, ScanDate, expired')
+        $this->db->select('id, Domain_Name, Drop_Date, ScanDate, expired, 0 prescan')
+                ->from($this->_tblname)
                 ->where("expired=FALSE")
                 ->where("Drop_Date <=", $dropdate)
                 ->or_where("expired=TRUE")
                 ->where("ScanDate <=", $scandate);
-        $query = $this->db->get($this->_tblname);
+        $subQuery1 = $this->db->get_compiled_select();
 
-        return $query->result();
-       
+        $date = new DateTime();
+        $date->add(new DateInterval('P5D'));
+        $dropdate_before5 = $date->format("Y-m-d");
+
+        $this->db->select('id, Domain_Name, Drop_Date, ScanDate, expired, 1 prescan')
+                ->from($this->_tblname)
+                ->where("expired=FALSE")
+                ->where("Drop_Date >", $dropdate)
+                ->where("Drop_Date <=", $dropdate_before5);
+        $subQuery2 = $this->db->get_compiled_select();
+
+        $query = $this->db->query($subQuery1 . " UNION " . $subQuery2);
+        
+        return $query->result();       
     }
 
     public function update_domain($id, $data){
